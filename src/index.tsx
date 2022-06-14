@@ -1,8 +1,15 @@
-import ReactDOM from "react-dom/client";
-import "./index.css";
+import React from "react";
+import ReactDOM from "react-dom";
 import App from "./App";
+import { Provider } from "mobx-react";
 
-const root = ReactDOM.createRoot(
-  document.getElementById("root") as HTMLElement
+import store from "./store";
+
+import "./index.css";
+
+ReactDOM.render(
+  <Provider {...store}>
+    <App />
+  </Provider>,
+  document.getElementById("root")
 );
-root.render(<App />);
