@@ -8,10 +8,11 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import { TCoin } from "../../types";
+import { TCoin, TCoinDiff } from "../../types";
 import { observer, inject } from "mobx-react";
 import CurrenciesStore from "../../store/CurrenciesStore";
 import ConverterStore from "../../store/ConverterStore";
+import styles from "../../styles";
 
 type ICryptoTable = {
   currenciesStore?: CurrenciesStore;
@@ -24,16 +25,23 @@ const CryptoTable: React.FC<ICryptoTable> = inject(
 )(
   observer(({ currenciesStore, converterStore }: ICryptoTable) => {
     const items: TCoin[] = currenciesStore!.getItems;
+    const diffObj: TCoinDiff = currenciesStore!.getDiffObj;
     // useEffect
     React.useEffect(() => {
       if (currenciesStore) {
         currenciesStore.fetchCoins();
-        // setInterval(() => {
-        //   currenciesStore.fetchCoins();
-        // }, 30 * 1000); 
+        setInterval(() => {
+          currenciesStore.fetchCoins();
+        }, 30 * 1000);
       }
       // eslint-disable-next-line
     }, []);
+
+    const onClickRow = (coin: TCoin) => {
+      if (converterStore) {
+        converterStore.setSelectedCoin(coin);
+      }
+    };
 
     return (
       <TableContainer component={Paper}>
@@ -54,7 +62,12 @@ const CryptoTable: React.FC<ICryptoTable> = inject(
               </tr>
             ) : (
               items.map((coin: TCoin) => (
-                <TableRow hover key={coin.name}>
+                <TableRow
+                  key={coin.name}
+                  hover
+                  style={styles.rowCurrency}
+                  onClick={() => onClickRow(coin)}
+                >
                   <TableCell>
                     <img
                       style={{ width: 18, height: 18, borderRadius: 30 }}
@@ -64,7 +77,15 @@ const CryptoTable: React.FC<ICryptoTable> = inject(
                   </TableCell>
                   <TableCell align="left">{coin.name}</TableCell>
                   <TableCell align="left">{coin.fullName}</TableCell>
-                  <TableCell align="left">${coin.price}</TableCell>
+                  <TableCell
+                    style={
+                      diffObj[coin.name] &&
+                      styles[`${diffObj[coin.name]}Column`]
+                    }
+                    align="left"
+                  >
+                    ${coin.price}
+                  </TableCell>
                   <TableCell align="left">${coin.volume24Hour}</TableCell>
                 </TableRow>
               ))
